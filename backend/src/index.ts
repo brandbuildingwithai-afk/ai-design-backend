@@ -38,11 +38,13 @@ app.get('/api', (_req: Request, res: Response) => {
 
 // Import routes (will create these next)
 import agentRoutes from './routes/agent.routes';
+import brandRoutes from './routes/brand.routes';
 import templateRoutes from './routes/template.routes';
 import postRoutes from './routes/post.routes';
 
 // API Routes
 app.use('/api/agents', agentRoutes);
+app.use('/api/brand', brandRoutes);
 app.use('/api/templates', templateRoutes);
 app.use('/api/posts', postRoutes);
 
