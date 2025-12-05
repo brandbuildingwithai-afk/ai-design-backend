@@ -1,0 +1,176 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                String              @id @default(uuid())
+  email             String              @unique
+  password          String
+  name              String
+  subscriptionTier  SubscriptionTier    @default(FREE)
+  creditsRemaining  Int                 @default(10)
+  createdAt         DateTime            @default(now())
+  updatedAt         DateTime            @updatedAt
+  
+  brandProfiles     BrandProfile[]
+  posts             GeneratedPost[]
+  transactions      CreditTransaction[]
+  agentLogs         AgentLog[]
+  
+  @@index([email])
+}
+
+enum SubscriptionTier {
+  FREE
+  PRO
+  ENTERPRISE
+}
+
+model BrandProfile {
+  id              String   @id @default(uuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  brandName       String
+  primaryColor    String
+  secondaryColor  String
+  accentColor     String
+  fontPrimary     String
+  fontSecondary   String
+  logoUrl         String?
+  
+  brandStyleJson  Json     // Full AI analysis with detailed design patterns
+  learnedFromUrls String[] // Cloudinary URLs of uploaded images
+  toneOfVoice     String   // professional/casual/playful
+  
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  
+  posts           GeneratedPost[]
+  
+  @@index([userId])
+}
+
+model WorkflowTemplate {
+  id                String   @id @default(uuid())
+  name              String   @unique
+  platform          Platform
+  iconUrl           String
+  promptTemplate    String   @db.Text
+  requiredInputs    String[] // Array of input field names
+  aiInstructions    String   @db.Text
+  previewImageUrl   String
+  dimensions        Json     // {width: 1080, height: 1080}
+  isActive          Boolean  @default(true)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  posts             GeneratedPost[]
+  
+  @@index([platform])
+}
+
+enum Platform {
+  INSTAGRAM
+  LINKEDIN
+  TWITTER
+  FACEBOOK
+}
+
+model GeneratedPost {
+  id              String            @id @default(uuid())
+  userId          String
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  brandProfileId  String
+  brandProfile    BrandProfile      @relation(fields: [brandProfileId], references: [id], onDelete: Cascade)
+  
+  templateId      String?
+  template        WorkflowTemplate? @relation(fields: [templateId], references: [id], onDelete: SetNull)
+  
+  platform        Platform
+  promptUsed      String            @db.Text
+  elementsJson    Json              // Full canvas state from Fabric.js
+  finalImageUrl   String?
+  isFavorite      Boolean           @default(false)
+  
+  createdAt       DateTime          @default(now())
+  lastEdited      DateTime          @updatedAt
+  
+  elements        DesignElement[]
+  
+  @@index([userId])
+  @@index([brandProfileId])
+  @@index([createdAt])
+}
+
+model DesignElement {
+  id          String      @id @default(uuid())
+  postId      String
+  post        GeneratedPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  elementType ElementType
+  content     String      @db.Text // Text or image URL
+  positionX   Float       // 0-100 percentage
+  positionY   Float       // 0-100 percentage
+  width       Float       // 0-100 percentage
+  height      Float       // 0-100 percentage
+  zIndex      Int
+  
+  // Styling properties
+  fontFamily  String?
+  fontSize    Int?
+  color       String?
+  rotation    Float       @default(0)
+  opacity     Float       @default(1)
+  isLocked    Boolean     @default(false)
+  
+  // Advanced styling (stored as JSON for flexibility)
+  styleJson   Json?
+  
+  createdAt   DateTime    @default(now())
+  
+  @@index([postId])
+}
+
+enum ElementType {
+  TEXT
+  IMAGE
+  SHAPE
+  ICON
+}
+
+model CreditTransaction {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  creditsChange    Int      // Negative for usage, positive for refill
+  reason           String
+  remainingBalance Int
+  
+  createdAt        DateTime @default(now())
+  
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model AgentLog {
+  id          String   @id @default(uuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id])
+  agentName   String
+  inputPrompt String   @db.Text
+  outputJson  Json
+  createdAt   DateTime @default(now())
+}
+
