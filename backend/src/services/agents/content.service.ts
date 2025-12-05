@@ -1,11 +1,11 @@
-import { Stability } from '@stability/sdk';
+// import { Stability } from '@stability/sdk';  // TODO: Add when using Stability AI
 import { config } from 'dotenv';
 
 config();
 
-const stability = new Stability({
-    apiKey: process.env.STABILITY_API_KEY,
-});
+// const stability = new Stability({
+//     apiKey: process.env.STABILITY_API_KEY,
+// });
 
 /**
  * Generates copy text and an image URL based on the design brief.
@@ -26,25 +26,24 @@ export const generateContent = async (brief: any) => {
     });
     let copyJson: any = {};
     try {
-        copyJson = JSON.parse(copyResp.content[0].text);
+        copyJson = JSON.parse((copyResp.content[0] as any).text);
     } catch (e) {
         copyJson = { headline: 'Your Brand', body: 'Check out our latest product!' };
     }
 
-    // Generate a single image using Stability AI (placeholder prompt)
-    const imagePrompt = `Create a high‑resolution ${brief.platform} style image for a ${brief.tone} brand. Use colors from the brand profile if available.`;
+    // TODO: Generate images using Stability AI when ready
+    // const imagePrompt = `Create a high‑resolution ${brief.platform} style image for a ${brief.tone} brand.`;
     let imageUrl = '';
-    try {
-        const imgResp = await stability.textToImage({
-            prompt: imagePrompt,
-            width: 1024,
-            height: 1024,
-        });
-        // Assume first artifact URL
-        imageUrl = imgResp.artifacts[0].url;
-    } catch (e) {
-        imageUrl = '';
-    }
+    // try {
+    //     const imgResp = await stability.textToImage({
+    //         prompt: imagePrompt,
+    //         width: 1024,
+    //         height: 1024,
+    //     });
+    //     imageUrl = imgResp.artifacts[0].url;
+    // } catch (e) {
+    //     imageUrl = '';
+    // }
 
     return {
         headline: copyJson.headline,

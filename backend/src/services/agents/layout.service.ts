@@ -25,7 +25,7 @@ Return an array like [{ id: "title", type: "text", x: 5, y: 5, width: 90, height
     });
 
     try {
-        const textBlock = response.content.find((c: any) => c.type === 'text');
+        const textBlock = response.content.find((c: any) => c.type === 'text') as any;
         const rawText = textBlock?.text ?? '';
         const json = JSON.parse(rawText);
         return json;

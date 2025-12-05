@@ -35,7 +35,7 @@ Only output valid JSON.${templateContext}
 
     // The API returns a string; attempt to parse JSON safely.
     try {
-        const textBlock = response.content.find((c: any) => c.type === 'text');
+        const textBlock = response.content.find((c: any) => c.type === 'text') as any;
         const rawText = textBlock?.text ?? '';
         const json = JSON.parse(rawText);
 
